@@ -1,4 +1,42 @@
+canDefineProperty = do ->
+  defProp = Object.defineProperty
+  
+  # Catch IE8 where Object.defineProperty exists but only works on DOM elements
+  if defProp
+    try
+      defProp {}, 'a', get: ->
+    catch e
+      defProp = null
+  
+  if defProp
+    # Detects a bug in Android <3.2 where you cannot redefine a property using
+    # Object.defineProperty once accessors have already been set.
+    
+    canRedefineProperties = do ->
+      obj = {}
+
+      defProp(obj, 'a', {
+        configurable: true
+        enumerable: true
+        get: ->
+        set: ->
+      })
+
+      defProp(obj, 'a', {
+        configurable: true
+        enumerable: true
+        writable: true
+        value: true
+      })
+  
+      obj.a == true
+    
+    defProp = null if !canRedefineProperties
+  
+  defProp
+
 embeddedVector = do ->
+
   ### Helper methods ###
   capitalizeWord = (s) -> 
     if s? then s.charAt(0).toUpperCase() + s.slice(1) else ""
@@ -31,12 +69,25 @@ embeddedVector = do ->
     xVariableName = "_#{xBaseName}"
     yVariableName = "_#{yBaseName}"
   
+    # Default values
+    @[xVariableName] = 0.0
+    @[yVariableName] = 0.0
+  
     @[xGetterName] = -> @[xVariableName]
     @[yGetterName] = -> @[yVariableName]
   
-    @[xSetterName] = (v) -> @[xVariableName] = v; undefined
-    @[ySetterName] = (v) -> @[yVariableName] = v; undefined
+    @[xSetterName] = (v) -> @[xVariableName] = v
+    @[ySetterName] = (v) -> @[yVariableName] = v
 
+    # Native getters/setters
+    if canDefineProperty
+      Object.defineProperty this, xBaseName,
+        get: @[xGetterName]
+        set: @[xSetterName]
+      Object.defineProperty this, yBaseName,
+        get: @[yGetterName]
+        set: @[ySetterName]
+        
     ### Sets the components of this vector. ###
     @[buildMethodName(prefix, "set")] = (x, y) ->
       @[xSetterName](x)
@@ -162,7 +213,5 @@ embeddedVector.mixinTo(Particle)
 embeddedVector.mixinTo(Sprite, "target")
 
 @p = new Particle
-@p.set(0, 0)
 
 @s = new Sprite
-@s.setTarget(0, 0)
