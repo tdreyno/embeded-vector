@@ -13,8 +13,8 @@
 
       })();
 
-      embeddedVector.mixinTo(Particle, "position");
-      embeddedVector.mixinTo(Particle, "velocity");
+      Vector.mixinTo(Particle, "position");
+      Vector.mixinTo(Particle, "velocity");
 
       Sprite = (function() {
 
@@ -24,7 +24,7 @@
 
       })();
 
-      embeddedVector.mixinTo(Sprite, "target");
+      Vector.mixinTo(Sprite, "target");
 
       p = new Particle;
 

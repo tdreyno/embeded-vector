@@ -1,26 +1,27 @@
-(function() {
+/*jshint forin:true, eqnull:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, undef:true, curly:true, node:true, sub:true, latedef:true, newcap:true, indent:2, maxerr:50 */
+(function () {
   // Whether or not Object.defineProperty is supported
-  var canDefineProperty = (function() {
+  var canDefineProperty = (function () {
     var canRedefineProperties, defProp;
     defProp = Object.defineProperty;
     if (defProp) {
       try {
         defProp({}, 'a', {
-          get: function() {}
+          get: function () {}
         });
       } catch (e) {
         defProp = null;
       }
     }
     if (defProp) {
-      canRedefineProperties = (function() {
+      canRedefineProperties = (function () {
         var obj;
         obj = {};
         defProp(obj, 'a', {
           configurable: true,
           enumerable: true,
-          get: function() {},
-          set: function() {}
+          get: function () {},
+          set: function () {}
         });
         defProp(obj, 'a', {
           configurable: true,
@@ -66,7 +67,14 @@
   }
 
   // Core Mixin
-  function embeddedVector(prefix, options) {
+  function Vector(prefix, options) {
+    var atan2 = Math.atan2,
+        sqrt  = Math.sqrt,
+        sin   = Math.sin,
+        cos   = Math.cos,
+        PI    = Math.PI,
+        RAD_TO_DEGREE = PI / 180;
+      
     if (options == null) { options = {}; }
   
     if (options.defaultX == null) { options.defaultX = 0.0; }
@@ -182,7 +190,7 @@
   
     // Computes the magnitude (length).
     function magnitude() {
-      return Math.sqrt(this[buildMethodName(prefix, "magnitudeSquared")]());
+      return sqrt(this[buildMethodName(prefix, "magnitudeSquared")]());
     }
   
     // Computes the squared distance to another vector.
@@ -198,14 +206,53 @@
   
     // Computes the distance to another vector.
     function distance(v, targetPrefix) {
-      return Math.sqrt(this[buildMethodName(prefix, "distanceSquared")](v, targetPrefix));
+      return sqrt(this[buildMethodName(prefix, "distanceSquared")](v, targetPrefix));
     }
   
+    // Computes angle between two vectors
+    function angle(v, targetPrefix) {
+      var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
+          targetY = getPropFromTargetObject(this, v, "y", targetPrefix),
+          x = getX.call(this),
+          y = getY.call(this);
+          
+      return atan2(targetY - y, targetX - x) * 180 / PI;
+    }
+    
+    // Rotate vector (optionally around another vector)
+    function rotate(angle, v, targetPrefix) {
+      var radAngle = angle * RAD_TO_DEGREE,
+          x = getX.call(this),
+          y = getY.call(this),
+          targetX, targetY;
+        
+      if (typeof v !== "undefined") {
+        targetX = getPropFromTargetObject(this, v, "x", targetPrefix);
+        targetY = getPropFromTargetObject(this, v, "y", targetPrefix);
+        
+        x -= targetX;
+        y -= targetY;
+      }
+      
+      var s = sin(angle),
+          c = cos(angle),
+          resultX = x * c - y * s,
+          resultY = y * c + x * s;
+
+      if (targetX || targetY) {
+        resultX += targetX;
+        resultY += targetY;
+      }
+      
+      setX.call(this, resultX);
+      setY.call(this, resultY);
+    }
+    
     // Normalises the vector, making it a unit vector (of length 1).
     function normalize() {
       var x = getX.call(this),
           y = getY.call(this),
-          m = Math.sqrt(x * x + y * y);
+          m = sqrt(x * x + y * y);
       setX.call(this, x / m);
       setY.call(this, y / m);
     }
@@ -214,7 +261,7 @@
     function limit(l) {
       var mSq = this[buildMethodName(prefix, "magnitudeSquared")]();
       if (mSq > l * l) {
-        var m = Math.sqrt(mSq),
+        var m = sqrt(mSq),
             x = getX.call(this),
             y = getY.call(this);
         x /= m;
@@ -260,6 +307,8 @@
     this[buildMethodName(prefix, "magnitude")]        = magnitude;
     this[buildMethodName(prefix, "distanceSquared")]  = distanceSquared;
     this[buildMethodName(prefix, "distance")]         = distance;
+    this[buildMethodName(prefix, "angle")]            = angle;
+    this[buildMethodName(prefix, "rotate")]           = rotate;
     this[buildMethodName(prefix, "normalize")]        = normalize;
     this[buildMethodName(prefix, "limit")]            = limit;
     this[buildMethodName(prefix, "copy")]             = copy;
@@ -267,11 +316,16 @@
   }
 
   // Convenience mixinTo alias
-  embeddedVector["mixinTo"] = function mixinTo(target, prefix) {
-    return embeddedVector.call(target.prototype, prefix);
+  Vector["mixinTo"] = function mixinTo(target, prefix) {
+    return Vector.call(target.prototype, prefix);
+  };
+  
+  // Find a point somewhere between two numbers
+  Vector["mix"] = function mix(start, end, percentage) {
+    return start * (1.0 - percentage) + end * percentage;
   };
 
   // Export mixin
   var root = typeof exports !== "undefined" && exports !== null ? exports : this;
-  root["embeddedVector"] = embeddedVector;
+  root["Vector"] = Vector;
 })();
