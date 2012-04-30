@@ -2,6 +2,33 @@
 <html>
   <head>
     <script src="javascripts/embedded-vector.js"></script>
+    <script>
+      var Particle, Sprite;
+
+      Particle = (function() {
+
+        function Particle() {}
+
+        return Particle;
+
+      })();
+
+      embeddedVector.mixinTo(Particle);
+
+      Sprite = (function() {
+
+        function Sprite() {}
+
+        return Sprite;
+
+      })();
+
+      embeddedVector.mixinTo(Sprite, "target");
+
+      p = new Particle;
+
+      s = new Sprite;
+    </script>
   </head>
   <body>
   </body>
