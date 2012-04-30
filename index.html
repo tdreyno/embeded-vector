@@ -13,7 +13,8 @@
 
       })();
 
-      embeddedVector.mixinTo(Particle);
+      embeddedVector.mixinTo(Particle, "position");
+      embeddedVector.mixinTo(Particle, "velocity");
 
       Sprite = (function() {
 
