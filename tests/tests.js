@@ -9,6 +9,33 @@ test("Defaults to 0x0", function() {
   equal(p1.getY(), 0, "Y equals 0");
 });
 
+
+test("Clears to 0x0", function() {
+  function Plain() {}
+  Vector.mixinTo(Plain);
+
+  var p1 = new Plain();
+  
+  p1.set(10, 20);
+  p1.clear();
+  
+  equal(p1.getX(), 0, "X equals 0");
+  equal(p1.getY(), 0, "Y equals 0");
+});
+
+test("Clears prefixed to 0x0", function() {
+  function Plain() {}
+  Vector.mixinTo(Plain, "position");
+
+  var p1 = new Plain();
+  
+  p1.setPosition(10, 20);
+  p1.clearPosition();
+  
+  equal(p1.getPositionX(), 0, "X equals 0");
+  equal(p1.getPositionY(), 0, "Y equals 0");
+});
+
 test("Alternative Default", function() {
   function Plain() {}
   Vector.mixinTo(Plain, null, {
@@ -68,6 +95,22 @@ test("Getters and setters", function() {
   equal(p1.y, 20, ".y is 20");
 });
 
+test("Getters and setters with prefix", function() {
+  function Plain() {}
+  Vector.mixinTo(Plain, "position", {
+    nativeGettersAndSetters: true
+  });
+
+  var p1 = new Plain();
+  equal(p1.positionX, 0, ".x is 0");
+  equal(p1.positionY, 0, ".y is 0");
+  
+  p1.positionX = 10;
+  p1.positionY = 20;
+  equal(p1.positionX, 10, ".x is 10");
+  equal(p1.positionY, 20, ".y is 20");
+});
+
 module("Add");
 test("Add same classes", function() {
   function Plain() {}
@@ -83,7 +126,7 @@ test("Add same classes", function() {
   equal(p1.getY(), 20, ".y is 20");
 });
 
-test("Add same different classes", function() {
+test("Add different classes", function() {
   function Plain() {}
   Vector.mixinTo(Plain, "velocity");
   
@@ -115,7 +158,7 @@ test("Subtract same classes", function() {
   equal(p1.getY(), -20, ".y is -20");
 });
 
-test("Subtract same different classes", function() {
+test("Subtract different classes", function() {
   function Plain() {}
   Vector.mixinTo(Plain, "velocity");
   
@@ -148,7 +191,7 @@ test("Multiply same classes", function() {
   equal(p1.getY(), 20, ".y is 20");
 });
 
-test("Multiply same different classes", function() {
+test("Multiply different classes", function() {
   function Plain() {}
   Vector.mixinTo(Plain);
   Vector.mixinTo(Plain, "velocity");
@@ -183,7 +226,7 @@ test("Divide same classes", function() {
   equal(p1.getY(), 10, ".y is 10");
 });
 
-test("Divide same different classes", function() {
+test("Divide different classes", function() {
   function Plain() {}
   Vector.mixinTo(Plain, "velocity");
   
@@ -230,7 +273,7 @@ test("Dot product same classes", function() {
   equal(p1.getY(), 40, ".y is 40");
 });
 
-test("Dot product same different classes", function() {
+test("Dot product different classes", function() {
   function Plain() {}
   Vector.mixinTo(Plain, "velocity");
   
@@ -264,7 +307,7 @@ test("Cross product same classes", function() {
   equal(p1.getY(), 20, ".y is 20");
 });
 
-test("Cross product same different classes", function() {
+test("Cross product different classes", function() {
   function Plain() {}
   Vector.mixinTo(Plain, "velocity");
   
@@ -280,4 +323,44 @@ test("Cross product same different classes", function() {
   p1.crossVelocity(p2, "position");
   equal(p1.getVelocityX(), 20, ".x is 20");
   equal(p1.getVelocityY(), 20, ".y is 20");
+});
+
+module("Magnitude");
+test("Magnitude", function() {
+  function Plain() {}
+  Vector.mixinTo(Plain);
+
+  var p1 = new Plain();
+  equal(p1.magnitude(), 0, "magnitude is 0");
+  
+  p1.set(3, 4);
+  equal(p1.magnitude(), 5, "magnitude is 5");
+});
+
+module("Distance");
+test("Distance same classes", function() {
+  function Plain() {}
+  Vector.mixinTo(Plain);
+
+  var p1 = new Plain();
+  
+  var p2 = new Plain();
+  p2.set(3, 4);
+  
+  equal(p1.distance(p2), 5, "distance is 5");
+});
+
+test("Distance different classes", function() {
+  function Plain() {}
+  Vector.mixinTo(Plain, "velocity");
+  
+  function Plain2() {}
+  Vector.mixinTo(Plain2, "position");
+
+  var p1 = new Plain();
+  
+  var p2 = new Plain2();
+  p2.setPosition(3, 4);
+  
+  equal(p1.distanceVelocity(p2, "position"), 5, "distance is 5");
 });
