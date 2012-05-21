@@ -31,7 +31,9 @@
         });
         return obj.a === true;
       })();
-      if (!canRedefineProperties) { defProp = null; }
+      if (!canRedefineProperties) { 
+        defProp = null; 
+      }
     }
     return defProp;
   })();
@@ -51,15 +53,14 @@
 
   function getPropFromTargetObject(obj, v, prop, targetPrefix) {
     var getterNameVar, propBaseName;
-    if (obj.constructor === v.constructor) {
-      return v[obj["" + prop + "GetterName"]]();
-    } else if (targetPrefix != null) {
+
+    if (targetPrefix != null) {
       propBaseName = targetPrefix != null ? "" + targetPrefix + (prop.toUpperCase()) : prop;
       return v[buildMethodName(propBaseName, "get")]();
     } else {
       getterNameVar = buildMethodName(prop, "get");
       if (v[getterNameVar] != null) {
-        return v[v[getterNameVar]]();
+        return v[getterNameVar]();
       } else {
         throw "Property " + prop + " not found on object. Try passing a 'targetPrefix' for cross-class comparisons.";
       }
@@ -79,7 +80,7 @@
   
     if (options.defaultX == null) { options.defaultX = 0.0; }
     if (options.defaultY == null) { options.defaultY = 0.0; }
-  
+
     if (options.nativeGettersAndSetters == null) {
       options.nativeGettersAndSetters = false;
     }
@@ -129,6 +130,7 @@
   
     // Add a vector to this one.
     function add(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
       var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
           targetY = getPropFromTargetObject(this, v, "y", targetPrefix);
       setX.call(this, getX.call(this) + targetX);
@@ -145,6 +147,7 @@
     
     // Multiply a vector by this one.
     function multiply(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
       var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
           targetY = getPropFromTargetObject(this, v, "y", targetPrefix);
       setX.call(this, getX.call(this) * targetX);
@@ -153,6 +156,7 @@
     
     // Divide a vector by this one.
     function divide(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
       var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
           targetY = getPropFromTargetObject(this, v, "y", targetPrefix);
       setX.call(this, getX.call(this) / targetX);
@@ -167,6 +171,7 @@
   
     // Computes the dot product between vectors.
     function dot(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
       var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
           targetY = getPropFromTargetObject(this, v, "y", targetPrefix);
       setX.call(this, getX.call(this) * targetX);
@@ -175,6 +180,7 @@
   
     // Computes the cross product between vectors.
     function cross(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
       var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
           targetY = getPropFromTargetObject(this, v, "y", targetPrefix);
       setX.call(this, getX.call(this) * targetY);
@@ -195,6 +201,8 @@
   
     // Computes the squared distance to another vector.
     function distanceSquared(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
+      
       var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
           targetY = getPropFromTargetObject(this, v, "y", targetPrefix),
           x = getX.call(this),
@@ -206,11 +214,15 @@
   
     // Computes the distance to another vector.
     function distance(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
+        
       return sqrt(this[buildMethodName(prefix, "distanceSquared")](v, targetPrefix));
     }
   
     // Computes angle between two vectors
     function angle(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
+      
       var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
           targetY = getPropFromTargetObject(this, v, "y", targetPrefix),
           x = getX.call(this),
@@ -221,6 +233,8 @@
     
     // Rotate vector (optionally around another vector)
     function rotate(angle, v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
+      
       var radAngle = angle * RAD_TO_DEGREE,
           x = getX.call(this),
           y = getY.call(this),
@@ -276,6 +290,7 @@
   
     // Copies components from another vector.
     function copy(v, targetPrefix) {
+      if (typeof targetPrefix === "undefined") { targetPrefix = prefix; }
       var targetX = getPropFromTargetObject(this, v, "x", targetPrefix),
           targetY = getPropFromTargetObject(this, v, "y", targetPrefix);
       setX.call(this, targetY);
@@ -316,8 +331,8 @@
   }
 
   // Convenience mixinTo alias
-  Vector["mixinTo"] = function mixinTo(target, prefix) {
-    return Vector.call(target.prototype, prefix);
+  Vector["mixinTo"] = function mixinTo(target, prefix, options) {
+    return Vector.call(target.prototype, prefix, options);
   };
   
   // Find a point somewhere between two numbers
